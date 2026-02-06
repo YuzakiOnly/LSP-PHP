@@ -16,17 +16,33 @@ class StudentController
         }
 
         $student = Student::search($keyword);
+
+        $sortBy = $_GET['sort'] ?? 'nis';
+        $sortOrder = $_GET['order'] ?? 'asc';
+        $student = Student::sort($student, $sortBy, $sortOrder);
+
         $averages = Student::calculateAllAverages($student);
         $searchKeyword = $keyword;
 
         require VIEW_PATH . 'student/index.php';
     }
+
     public function index()
     {
         $student = Student::getAll();
+
+        $sortBy = $_GET['sort'] ?? 'nis';
+        $sortOrder = $_GET['order'] ?? 'asc';
+        $student = Student::sort($student, $sortBy, $sortOrder);
+
         $averages = Student::calculateAllAverages($student);
 
         require VIEW_PATH . 'student/index.php';
+    }
+
+    public function create()
+    {
+        require VIEW_PATH . 'student/form.php';
     }
 
     public function store()
@@ -46,7 +62,7 @@ class StudentController
         if ($nisExists) {
             $_SESSION['error'] = "NIS {$nis} sudah terdaftar!";
             $_SESSION['old_input'] = $_POST;
-            header("Location: index.php");
+            header("Location: index.php?action=create");
             exit;
         }
 
@@ -60,19 +76,29 @@ class StudentController
         ];
 
         Student::create($data);
+        $_SESSION['success'] = "Data siswa {$data['nama']} berhasil ditambahkan!";
         header("Location: index.php");
         exit;
     }
 
     public function edit()
     {
-        $index = $_GET['edit'];
-        $editData = Student::find($index);
+        $nis = $_GET['nis'] ?? '';
 
-        $student = Student::getAll();
-        $averages = Student::calculateAllAverages($student);
+        if (empty($nis)) {
+            header("Location: index.php");
+            exit;
+        }
 
-        require VIEW_PATH . 'student/index.php';
+        $editData = Student::find($nis);
+
+        if (!$editData) {
+            $_SESSION['error'] = "Data siswa tidak ditemukan!";
+            header("Location: index.php");
+            exit;
+        }
+
+        require VIEW_PATH . 'student/form.php';
     }
 
     public function update()
@@ -93,11 +119,10 @@ class StudentController
         if ($nisExists) {
             $_SESSION['error'] = "NIS {$newNis} sudah terdaftar!";
             $_SESSION['old_input'] = $_POST;
-            header("Location: index.php?edit=" . urlencode($oldNis));
+            header("Location: index.php?action=edit&nis=" . urlencode($oldNis));
             exit;
         }
-        
-        $oldNis = $_POST['old_nis'];
+
         $data = [
             'nis' => $_POST['nis'],
             'nama' => $_POST['nama'],
@@ -108,14 +133,28 @@ class StudentController
         ];
 
         Student::update($oldNis, $data);
+        $_SESSION['success'] = "Data siswa {$data['nama']} berhasil diupdate!";
         header("Location: index.php");
         exit;
     }
 
     public function delete()
     {
-        $index = $_GET['hapus'];
-        Student::delete($index);
+        $nis = $_GET['nis'] ?? '';
+
+        if (empty($nis)) {
+            header("Location: index.php");
+            exit;
+        }
+
+        $student = Student::find($nis);
+        if ($student) {
+            Student::delete($nis);
+            $_SESSION['success'] = "Data siswa {$student['nama']} berhasil dihapus!";
+        } else {
+            $_SESSION['error'] = "Data siswa tidak ditemukan!";
+        }
+
         header("Location: index.php");
         exit;
     }

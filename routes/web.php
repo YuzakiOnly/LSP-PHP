@@ -13,13 +13,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    if (isset($_GET['edit'])) {
-        $controller->edit();
-    } elseif (isset($_GET['hapus'])) {
-        $controller->delete();
-    } elseif (isset($_GET['search'])) {
-        $controller->search();
-    } else {
-        $controller->index();
+    $action = $_GET['action'] ?? null;
+
+    switch ($action) {
+        case 'create':
+            $controller->create();
+            break;
+
+        case 'edit':
+            $controller->edit();
+            break;
+
+        case 'delete':
+            $controller->delete();
+            break;
+
+        default:
+            if (isset($_GET['search'])) {
+                $controller->search();
+            } else {
+                $controller->index();
+            }
+            break;
     }
 }

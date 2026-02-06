@@ -139,4 +139,25 @@ class Student
         array_multisort(array_column($results, 'nis'), SORT_ASC, $results);
         return $results;
     }
+
+    public static function sort($students, $sortBy, $sortOrder)
+    {
+        if (empty($students)) {
+            return [];
+        }
+
+        if ($sortBy === 'rerata') {
+            $column = [];
+            foreach ($students as $student) {
+                $column[] = self::calculateAverage($student);
+            }
+        } else {
+            $column = array_column($students, $sortBy);
+        }
+
+        $order = ($sortOrder === 'desc') ? SORT_DESC : SORT_ASC;
+        array_multisort($column, $order, $students);
+
+        return $students;
+    }
 }

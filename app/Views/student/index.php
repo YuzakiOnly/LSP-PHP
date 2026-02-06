@@ -4,105 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Nilai Siswa</title>
-    <link rel="stylesheet" href="/learn-lsp-1/public/css/style.css">
+    <title>Data Nilai Siswa</title>
+    <link rel="stylesheet" href="/learn-lsp-1/public/css/table.css">
 </head>
 
 <body>
     <div class="container">
-
         <div class="main-content">
-            <div class="form-section">
-                <form action="index.php" method="POST" class="form-student">
-                    <h3>
-                        <?= isset($editData) ? ' Edit Data Siswa' : ' Input Data Siswa' ?>
-                    </h3>
-
-                    <?php if (isset($_SESSION['error'])): ?>
-                        <div class="alert alert-error">
-                            <?= $_SESSION['error'] ?>
-                        </div>
-                        <?php unset($_SESSION['error']); ?>
-                    <?php endif; ?>
-
-                    <?php if (isset($_SESSION['success'])): ?>
-                        <div class="alert alert-success">
-                            <?= $_SESSION['success'] ?>
-                        </div>
-                        <?php unset($_SESSION['success']); ?>
-                    <?php endif; ?>
-
-                    <div class="form-group">
-                        <label for="nis">NIS</label>
-                        <input type="text" id="nis" name="nis" value="<?= isset($editData) ? $editData['nis'] : '' ?>"
-                            required placeholder="Masukkan NIS">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="nama">Nama Lengkap</label>
-                        <input type="text" id="nama" name="nama"
-                            value="<?= isset($editData) ? $editData['nama'] : '' ?>" required
-                            placeholder="Masukkan nama lengkap">
-                    </div>
-
-                    <fieldset class="nilai-fieldset">
-                        <legend>Nilai Mata Pelajaran</legend>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="mtk">Matematika</label>
-                                <input type="number" id="mtk" name="mtk"
-                                    value="<?= isset($editData) ? $editData['mtk'] : '' ?>" min="0" max="100" required
-                                    placeholder="0-100">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="bin">Bahasa Indonesia</label>
-                                <input type="number" id="bin" name="bin"
-                                    value="<?= isset($editData) ? $editData['bin'] : '' ?>" min="0" max="100" required
-                                    placeholder="0-100">
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="big">Bahasa Inggris</label>
-                                <input type="number" id="big" name="big"
-                                    value="<?= isset($editData) ? $editData['big'] : '' ?>" min="0" max="100" required
-                                    placeholder="0-100">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="pro">Produktif</label>
-                                <input type="number" id="pro" name="pro"
-                                    value="<?= isset($editData) ? $editData['pro'] : '' ?>" min="0" max="100" required
-                                    placeholder="0-100">
-                            </div>
-                        </div>
-                    </fieldset>
-
-                    <div class="form-actions">
-                        <?php if (isset($editData)) { ?>
-                            <input type="hidden" name="old_nis" value="<?= $editData['nis'] ?>">
-                            <button type="submit" name="update" class="btn btn-primary">
-                                Update Data
-                            </button>
-                            <a href="index.php" class="btn btn-secondary">
-                                Batal
-                            </a>
-                        <?php } else { ?>
-                            <button type="submit" name="simpan" class="btn btn-primary">
-                                Simpan Data
-                            </button>
-                            <button type="reset" class="btn btn-secondary">
-                                Reset Form
-                            </button>
-                        <?php } ?>
-                    </div>
-                </form>
-            </div>
-            <div class="table-section">
-                <h3> Data Nilai Siswa</h3>
+            <div>
+                <div class="header-with-button">
+                    <h3> Data Nilai Siswa</h3>
+                    <a href="index.php?action=create" class="btn btn-primary">
+                        Tambah Data Siswa
+                    </a>
+                </div>
 
                 <div class="search-sort-group">
                     <div class="search-section">
@@ -119,14 +34,40 @@
                         </form>
                     </div>
 
-                    <!-- <div class="sort-section">
+                    <div class="sort-section">
+                        <?php
+                        $currentSort = $_GET['sort'] ?? 'nis';
+                        $currentOrder = $_GET['order'] ?? 'asc';
+                        $searchParam = isset($searchKeyword) ? '&search=' . urlencode($searchKeyword) : '';
+                        ?>
+                        <form action="index.php" method="GET" class="form-sort">
+                            <?php if (isset($searchKeyword)): ?>
+                                <input type="hidden" name="search" value="<?= htmlspecialchars($searchKeyword) ?>">
+                            <?php endif; ?>
 
-                    </div> -->
+                            <label for="sort">Urutkan:</label>
+                            <select name="sort" id="sort" class="sort-select">
+                                <option value="nis" <?= $currentSort == 'nis' ? 'selected' : '' ?>>NIS</option>
+                                <option value="mtk" <?= $currentSort == 'mtk' ? 'selected' : '' ?>>Matematika</option>
+                                <option value="bin" <?= $currentSort == 'bin' ? 'selected' : '' ?>>B. Indonesia</option>
+                                <option value="big" <?= $currentSort == 'big' ? 'selected' : '' ?>>B. Inggris</option>
+                                <option value="pro" <?= $currentSort == 'pro' ? 'selected' : '' ?>>Produktif</option>
+                                <option value="rerata" <?= $currentSort == 'rerata' ? 'selected' : '' ?>>Rata-rata</option>
+                            </select>
+
+                            <select name="order" id="order" class="sort-select">
+                                <option value="asc" <?= $currentOrder == 'asc' ? 'selected' : '' ?>>Terkecil</option>
+                                <option value="desc" <?= $currentOrder == 'desc' ? 'selected' : '' ?>>Terbesar</option>
+                            </select>
+
+                            <button type="submit" class="btn btn-sort">Terapkan</button>
+                        </form>
+                    </div>
                 </div>
 
                 <?php if (empty($student)): ?>
                     <div class="empty-state">
-                        <p> Belum ada data student. Silakan tambahkan data baru.</p>
+                        <p>Belum ada data siswa. Silakan tambahkan data baru.</p>
                     </div>
                 <?php else: ?>
                     <div class="table-wrapper">
@@ -140,7 +81,7 @@
                                     <th>MTK</th>
                                     <th>B.INDONESIA</th>
                                     <th>B.INGGRIS</th>
-                                    <th>PRODUTIF</th>
+                                    <th>PRODUKTIF</th>
                                     <th>Rata-rata</th>
                                 </tr>
                             </thead>
@@ -153,11 +94,11 @@
                                     <tr>
                                         <td><?= $index + 1 ?></td>
                                         <td class="action-cell">
-                                            <a href="index.php?edit=<?= urlencode($data['nis']) ?>" class="btn-action btn-edit"
-                                                title="Edit">
+                                            <a href="index.php?action=edit&nis=<?= urlencode($data['nis']) ?><?= $searchParam ?>&sort=<?= $currentSort ?>&order=<?= $currentOrder ?>"
+                                                class="btn-action btn-edit" title="Edit">
                                                 Edit
                                             </a>
-                                            <a href="index.php?hapus=<?= urlencode($data['nis']) ?>"
+                                            <a href="index.php?action=delete&nis=<?= urlencode($data['nis']) ?>"
                                                 class="btn-action btn-delete" title="Hapus"
                                                 onclick="return confirm('Apakah Anda yakin ingin menghapus data <?= htmlspecialchars($data['nama']) ?>?')">
                                                 Hapus
@@ -177,7 +118,7 @@
                             </tbody>
                             <tfoot>
                                 <tr class="average-row">
-                                    <td colspan="4"><strong>Rata-rata</strong></td>
+                                    <td class="rata-average-1" colspan="4"><strong>Rata-rata Keseluruhan</strong></td>
                                     <td><strong><?= $averages['mtk'] ?></strong></td>
                                     <td><strong><?= $averages['bin'] ?></strong></td>
                                     <td><strong><?= $averages['big'] ?></strong></td>
